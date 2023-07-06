@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Text;
 using Api.Options;
 using Azure;
 using Azure.Identity;
@@ -13,8 +12,6 @@ namespace Api.Services
         public Task<byte[]> DownloadBlob(string blobName, string containerName, string accountName);
 
         public AsyncPageable<BlobItem> FetchAllBlobs(string containerName, string accountName);
-
-        public void UploadJsonToBlob(string json, string path, string containerName, string accountName, bool overwrite);
     }
 
     public class BlobService : IBlobService
@@ -52,23 +49,7 @@ namespace Api.Services
                 _logger.LogError(e, "{ErrorMessage}", errorMessage);
                 throw;
             }
-        }
 
-        public async void UploadJsonToBlob(string json, string path, string containerName, string accountName, bool overwrite = false)
-        {
-            var blobContainerClient = GetBlobContainerClient(containerName, accountName);
-
-            var blobClient = blobContainerClient.GetBlobClient(path);
-
-            using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(json));
-
-            try { await blobClient.UploadAsync(memoryStream, overwrite); }
-            catch (RequestFailedException e)
-            {
-                string errorMessage = $"Failed to fetch blob items because: {e.Message}";
-                _logger.LogError(e, "{ErrorMessage}", errorMessage);
-                throw;
-            }
         }
 
         private BlobContainerClient GetBlobContainerClient(string containerName, string accountName)
